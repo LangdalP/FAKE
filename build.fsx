@@ -453,6 +453,7 @@ let assemblyInfos =
         appDir </> sprintf "%s/AssemblyInfo.fs" project, [AssemblyInfo.Title (sprintf "FAKE - F# Make %s" description) ] @ common))
 
 Target.create "SetAssemblyInfo" (fun _ ->
+    Target.activateFinal "UnskipAndRevertAssemblyInfo_Final"
     for assemblyFile, attributes in assemblyInfos do
         // Fixes merge conflicts in AssemblyInfo.fs files, while at the same time leaving the repository in a compilable state.
         // http://stackoverflow.com/questions/32251037/ignore-changes-to-a-tracked-file
@@ -472,7 +473,7 @@ Target.create "DownloadPaket" (fun _ ->
         failwith "paket failed to start"
 )
 
-Target.create "UnskipAndRevertAssemblyInfo" (fun _ ->
+let unskip = (fun _ ->
     for assemblyFile, _ in assemblyInfos do
         // While the files are skipped in can be hard to switch between branches
         // Therefore we unskip and revert here.
@@ -480,6 +481,9 @@ Target.create "UnskipAndRevertAssemblyInfo" (fun _ ->
         Git.CommandHelper.directRunGitCommandAndFail "." (sprintf "checkout HEAD %s" assemblyFile)
         ()
 )
+
+Target.create "UnskipAndRevertAssemblyInfo" unskip
+Target.createFinal "UnskipAndRevertAssemblyInfo_Final" unskip
 
 Target.create "_BuildSolution" (fun _ ->
     MSBuild.runWithDefaults "Build" ["./src/Legacy-FAKE.sln"; "./src/Legacy-FAKE.Deploy.Web.sln"]
