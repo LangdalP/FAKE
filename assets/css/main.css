@@ -1946,6 +1946,13 @@ pre.code-toolbar>.toolbar span {
     font-size: inherit
 }
 
+.edit-button {
+    width: 1000px;
+    margin: 0 auto;
+    padding-top: 6px;
+    text-align: right;
+}
+
 /* Desktop + Tablet */
 
 @media screen and (min-width: 737px) {
